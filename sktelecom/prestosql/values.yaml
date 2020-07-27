@@ -1,0 +1,163 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+# Default values for Presto image with built-in Pinot Connector.
+
+image:
+  repository: prestosql/presto
+  tag: 339
+  pullPolicy: IfNotPresent
+
+druid:
+  connectorName: druid
+  connectionUrl: jdbc:avatica:remote:url=http://druid-broker:8082/druid/v2/sql/avatica/
+
+coordinator:
+  name: coordinator
+  port: 8080
+  replicaCount: 1
+
+  query:
+    maxMemory: 4GB
+    maxMemoryPerNode: 1GB
+    maxTotalMemoryPerNode: 2GB
+
+  discovery:
+    serverEnabled: true
+    uri: http://presto-coordinator:8080
+
+  jvm: |-
+    -server
+    -Xmx6G
+    -XX:-UseBiasedLocking
+    -XX:+UseG1GC
+    -XX:G1HeapRegionSize=32M
+    -XX:+ExplicitGCInvokesConcurrent
+    -XX:+HeapDumpOnOutOfMemoryError
+    -XX:+UseGCOverheadLimit
+    -XX:+ExitOnOutOfMemoryError
+    -XX:ReservedCodeCacheSize=256M
+    -Djdk.attach.allowAttachSelf=true
+    -Djdk.nio.maxCachedBufferSize=2000000
+
+  log: |-
+    com.facebook.presto=INFO
+
+  node:
+    environment: production
+    dataDir: /presto/data
+    schedulerIncludeCoordinator: true
+
+  persistence:
+    enabled: true
+    accessMode: ReadWriteOnce
+    size: 4G
+    storageClass: ""
+
+  service:
+    annotations: {}
+    clusterIP: ""
+    externalIPs: []
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    type: ClusterIP
+    port: 8080
+    nodePort: ""
+
+  external:
+    enabled: true
+    type: LoadBalancer
+    port: 8080
+
+  resources: {}
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  podAnnotations: {}
+
+  updateStrategy:
+    type: RollingUpdate
+
+
+worker:
+  name: worker
+  port: 8080
+  replicaCount: 1
+
+  query:
+    maxMemory: 8GB
+    maxMemoryPerNode: 4GB
+    maxTotalMemoryPerNode: 8GB
+
+  discovery:
+    uri: http://presto-coordinator:8080
+
+  jvm: |-
+    -server
+    -Xmx6G
+    -XX:-UseBiasedLocking
+    -XX:+UseG1GC
+    -XX:G1HeapRegionSize=32M
+    -XX:+ExplicitGCInvokesConcurrent
+    -XX:+HeapDumpOnOutOfMemoryError
+    -XX:+UseGCOverheadLimit
+    -XX:+ExitOnOutOfMemoryError
+    -XX:ReservedCodeCacheSize=256M
+    -Djdk.attach.allowAttachSelf=true
+    -Djdk.nio.maxCachedBufferSize=2000000
+
+  log: |-
+    com.facebook.presto=INFO
+
+  node:
+    environment: production
+    dataDir: /presto/data
+
+  persistence:
+    enabled: true
+    accessMode: ReadWriteOnce
+    size: 10G
+    storageClass: ""
+
+  service:
+    annotations: {}
+    clusterIP: ""
+    externalIPs: []
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    type: ClusterIP
+    port: 8080
+    nodePort: ""
+
+  resources: {}
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  podAnnotations: {}
+
+  updateStrategy:
+    type: RollingUpdate
